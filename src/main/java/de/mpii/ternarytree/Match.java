@@ -1,12 +1,12 @@
 package de.mpii.ternarytree;
 
-public class Spot {
+public class Match {
 
     private int tokenCount;
     private int tokenOffset;
     private int value;
 
-    public Spot(int tokenOffset, int tokenCount, int value) {
+    public Match(int tokenOffset, int tokenCount, int value) {
         this.tokenOffset = tokenOffset;
         this.tokenCount = tokenCount;
         this.value = value;
@@ -34,7 +34,7 @@ public class Spot {
     
     @Override
     public boolean equals(Object o) {
-        Spot m = (Spot) o;
+        Match m = (Match) o;
         return this.tokenCount == m.getTokenCount()
                 && this.tokenOffset == m.getTokenOffset()
                 && this.value == m.getValue();

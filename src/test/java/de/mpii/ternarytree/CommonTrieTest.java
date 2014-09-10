@@ -217,7 +217,7 @@ public class CommonTrieTest {
           + "He was banned to Saint Helena , died of stomach cancer , "
           + "and was buried at Invalides .";
       String[] tokens = text.split(" ");
-      Spot spot = ttp.getLongestMatch(tokens, 0);
+      Match spot = ttp.getLongestMatch(tokens, 0);
       assertEquals(1, spot.getTokenCount());
       
       spot = ttp.getLongestMatch(tokens, 6);
@@ -258,24 +258,24 @@ public class CommonTrieTest {
           + "He was banned to Saint Helena , died of stomach cancer , "
           + "and was buried at Invalides .";
       String[] tokens = text.split(" ");
-      List<Spot> matchedSpots = ttp.getAllMatches(tokens);
+      List<Match> matchedSpots = ttp.getAllMatches(tokens);
       
       assertEquals(7, matchedSpots.size());
 
       // offset, count, value
-      assertEquals(new Spot(0, 1, 1) , matchedSpots.get(0));
+      assertEquals(new Match(0, 1, 1) , matchedSpots.get(0));
 
-      assertEquals(new Spot(6, 3, 2), matchedSpots.get(1));
+      assertEquals(new Match(6, 3, 2), matchedSpots.get(1));
       
-      assertEquals(new Spot(14, 1, 3), matchedSpots.get(2));
+      assertEquals(new Match(14, 1, 3), matchedSpots.get(2));
       
-      assertEquals(new Spot(16, 1, 4), matchedSpots.get(3));
+      assertEquals(new Match(16, 1, 4), matchedSpots.get(3));
 
-      assertEquals(new Spot(18, 1, 5), matchedSpots.get(4));
+      assertEquals(new Match(18, 1, 5), matchedSpots.get(4));
       
-      assertEquals(new Spot(24, 2, 6), matchedSpots.get(5));
+      assertEquals(new Match(24, 2, 6), matchedSpots.get(5));
       
-      assertEquals(new Spot(36, 1, 7), matchedSpots.get(6));
+      assertEquals(new Match(36, 1, 7), matchedSpots.get(6));
     }
     
     private String getPrefixedString(String key) {

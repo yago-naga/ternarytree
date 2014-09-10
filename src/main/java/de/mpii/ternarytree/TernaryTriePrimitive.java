@@ -66,10 +66,10 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
      *            Tokenized text.
      * @return List of Matched SPots
      */
-    public List<Spot> getAllMatches(String[] tokens) {
-        List<Spot> machedSpots = new ArrayList<Spot>();
+    public List<Match> getAllMatches(String[] tokens) {
+        List<Match> machedSpots = new ArrayList<Match>();
         for (int i = 0; i < tokens.length; ++i) {
-            Spot m = getLongestMatch(tokens, i);
+            Match m = getLongestMatch(tokens, i);
             if (m.getTokenCount() > 0) {
                 machedSpots.add(m);
                 // Jump after longest match.
@@ -79,7 +79,7 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
         return machedSpots;
     }
 
-    public Spot getLongestMatch(String[] tokens, int start) {
+    public Match getLongestMatch(String[] tokens, int start) {
         int node = root;
         int value = -1;
         int iToken = start;
@@ -117,11 +117,11 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
                 }
             }
         }
-        return new Spot(start, iToken - start, value);
+        return new Match(start, iToken - start, value);
     }
     
     public int get(String[] tokens) {
-        Spot match = this.getLongestMatch(tokens, 0);
+        Match match = this.getLongestMatch(tokens, 0);
         if (match.getTokenCount() == tokens.length) {
             return match.getValue();
         } else {
