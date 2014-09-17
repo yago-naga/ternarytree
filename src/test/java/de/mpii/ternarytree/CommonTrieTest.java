@@ -147,6 +147,17 @@ public class CommonTrieTest {
         assertEquals(-1, t.get("academy awa"));
         assertEquals(-1, t.get("an"));
     }
+    
+    @Test
+    public void testContiguousDelimiters() {
+        t.put("the   dog", 0);
+        t.put("the   trie", 1);
+        assertEquals(0, t.get("the   dog"));
+        assertEquals(1, t.get("the   trie"));
+        
+        assertEquals(-1, t.get("the dog"));
+        assertEquals(-1, t.get("the trie"));
+    }
 
     @Test
     public void testBulkLoad() {

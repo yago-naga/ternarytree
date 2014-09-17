@@ -86,35 +86,30 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
         for(iToken = start; iToken < tokens.length; iToken++) {
             String token = tokens[iToken];
             int pos = 0;
-            while (node != -1) {
+            int relevantLength = getRelevantLength(token); 
+            while (node != -1 && pos < relevantLength) {
                 if (token.charAt(pos) < getNodeKey(node)) {
                     node = getLessChild(node);
                 } else if(token.charAt(pos) == getNodeKey(node)) {
-                    if (pos == getRelevantLength(token) - 1) {
-                        break;
-                    } else {
-                        node = getEqualChild(node);
-                        pos++;
-                    }
+                    value = getNodeValue(node);
+                    node = getEqualChild(node);
+                    pos++;
                 } else {
                     node = getGreatChild(node);
                 }
             }
-            if (node == -1) {
-                break;
-            } else{
-                //match delimiter
-                value = getNodeValue(node);
-                node = getEqualChild(node);
+            if (pos == relevantLength) {
                 if (node != -1 && iToken < tokens.length - 1) {
                     if (delimiter < getNodeKey(node)) {
                         node = getLessChild(node);
-                    } else if(delimiter == getNodeKey(node)) {
+                    } else if (delimiter == getNodeKey(node)) {
                         node = getEqualChild(node);
                     } else {
                         node = getGreatChild(node);
                     }
                 }
+            } else {
+                break;
             }
         }
         return new Match(start, iToken - start, value);
