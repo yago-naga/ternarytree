@@ -83,34 +83,32 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
         int node = root;
         int value = -1;
         int iToken = start;
-        for(iToken = start; iToken < tokens.length; iToken++) {
-            String token = tokens[iToken];
-            int pos = 0;
-            int relevantLength = getRelevantLength(token); 
-            while (node != -1 && pos < relevantLength) {
-                if (token.charAt(pos) < getNodeKey(node)) {
-                    node = getLessChild(node);
-                } else if(token.charAt(pos) == getNodeKey(node)) {
-                    value = getNodeValue(node);
-                    node = getEqualChild(node);
-                    pos++;
-                } else {
-                    node = getGreatChild(node);
-                }
+        int pos = 0;
+        while (node != -1 && iToken < tokens.length) {
+            int relevantLength = getRelevantLength(tokens[iToken]); 
+            char chr = delimiter;
+            if (pos < relevantLength) {
+                chr = tokens[iToken].charAt(pos);
             }
-            if (pos == relevantLength) {
-                if (node != -1 && iToken < tokens.length - 1) {
-                    if (delimiter < getNodeKey(node)) {
-                        node = getLessChild(node);
-                    } else if (delimiter == getNodeKey(node)) {
-                        node = getEqualChild(node);
-                    } else {
-                        node = getGreatChild(node);
-                    }
+            if (chr < getNodeKey(node)) {
+                node = getLessChild(node);
+            } else if(chr == getNodeKey(node)) {
+                if (pos == relevantLength - 1) {
+                    value = getNodeValue(node);
+                }
+                node = getEqualChild(node);
+                pos++;
+                if (pos > relevantLength) {
+                    pos = 0;
+                    iToken++;
                 }
             } else {
-                break;
+                node = getGreatChild(node);
             }
+        }
+        //check if we failed on a delimiter. Fix iToken so that we return current number of matched tokens.
+        if (iToken < tokens.length && pos == getRelevantLength(tokens[iToken])){
+            iToken++;
         }
         return new Match(start, iToken - start, value);
     }
