@@ -68,12 +68,15 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
      */
     public List<Match> getAllMatches(String[] tokens) {
         List<Match> machedSpots = new ArrayList<Match>();
-        for (int i = 0; i < tokens.length; ++i) {
+        int i = 0;
+        while (i < tokens.length) {
             Match m = getLongestMatch(tokens, i);
             if (m.getTokenCount() > 0) {
                 machedSpots.add(m);
                 // Jump after longest match.
                 i += m.getTokenCount();
+            } else {
+                i++;
             }
         }
         return machedSpots;

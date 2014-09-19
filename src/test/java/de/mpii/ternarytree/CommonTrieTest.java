@@ -267,11 +267,11 @@ public class CommonTrieTest {
       String text = "Napoleon was the emperor of the First French Empire . "
           + "He was defeated at Waterloo by Wellington and Blücher . "
           + "He was banned to Saint Helena , died of stomach cancer , "
-          + "and was buried at Invalides .";
+          + "and was buried at Invalides Invalides .";
       String[] tokens = text.split(" ");
       List<Match> matchedSpots = ttp.getAllMatches(tokens);
       
-      assertEquals(7, matchedSpots.size());
+      assertEquals(8, matchedSpots.size());
 
       // offset, count, value
       assertEquals(new Match(0, 1, 1) , matchedSpots.get(0));
@@ -287,6 +287,8 @@ public class CommonTrieTest {
       assertEquals(new Match(24, 2, 6), matchedSpots.get(5));
       
       assertEquals(new Match(36, 1, 7), matchedSpots.get(6));
+    
+      assertEquals(new Match(37, 1, 7), matchedSpots.get(7));
     }
     
     private String getPrefixedString(String key) {
