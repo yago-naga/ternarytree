@@ -84,7 +84,8 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
 
     public Match getLongestMatch(String[] tokens, int start) {
         int node = root;
-        int value = -1;
+        int matchValue = -1;
+        int matchToken = start - 1;
         int iToken = start;
         int pos = 0;
         while (node != -1 && iToken < tokens.length) {
@@ -97,7 +98,10 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
                 node = getLessChild(node);
             } else if(chr == getNodeKey(node)) {
                 if (pos == relevantLength - 1) {
-                    value = getNodeValue(node);
+                    if (getNodeValue(node) != -1) {
+                        matchValue = getNodeValue(node);
+                        matchToken = iToken;
+                    }
                 }
                 node = getEqualChild(node);
                 pos++;
@@ -109,11 +113,7 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
                 node = getGreatChild(node);
             }
         }
-        //check if we failed on a delimiter. Fix iToken so that we return current number of matched tokens.
-        if (iToken < tokens.length && pos == getRelevantLength(tokens[iToken])){
-            iToken++;
-        }
-        return new Match(start, iToken - start, value);
+        return new Match(start, matchToken - start + 1, matchValue);
     }
     
     public int get(String[] tokens) {
