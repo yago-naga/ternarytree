@@ -213,6 +213,10 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
         nodes.set(node + 3, value);
     }
     
+    public int getTotalNodes() {
+        return nodes.size();
+    }
+    
     public String getContent() {
         StringBuilder repr = getContent(root, new StringBuilder(), "");
         return repr.toString();
