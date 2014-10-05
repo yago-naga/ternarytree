@@ -4,6 +4,7 @@ import gnu.trove.list.TCharList;
 import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TCharArrayList;
 import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -214,8 +215,35 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
     }
     
     public int getTotalNodes() {
-        return nodes.size();
+        return labels.size();
     }
+    
+    private void getNodesPerLevel(TIntIntHashMap num, int level, int node) {
+        if (node == -1) {
+            return;
+        } else {
+            if ( ! num.containsKey(level)) {
+                num.put(level, 1);
+            } else {
+                num.increment(level);
+            }
+            getNodesPerLevel(num, level + 1, getLessChild(node));
+            getNodesPerLevel(num, level + 1, getEqualChild(node));
+            getNodesPerLevel(num, level + 1, getGreatChild(node));
+        }
+    }
+    
+    public int[] getNodesPerLevel() {
+        TIntIntHashMap num = new TIntIntHashMap();
+        getNodesPerLevel(num, 0, root);
+        int[] numArray = new int[num.size()];
+        for(int key : num.keys()) {
+            numArray[key] = num.get(key);
+        }
+        return numArray;
+    }
+    
+    
     
     public String getContent() {
         StringBuilder repr = getContent(root, new StringBuilder(), "");
