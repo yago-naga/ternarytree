@@ -4,6 +4,7 @@ import gnu.trove.list.TCharList;
 import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TCharArrayList;
 import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 
 import java.io.BufferedInputStream;
@@ -243,7 +244,30 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
         return numArray;
     }
     
+    private void getCollapsableLengths(int node, int length, TIntIntMap distribution) {
+        if (node == -1) {
+            return;
+        }
+        if (getEqualChild(node) > 0 && getLessChild(node) < 0 && getGreatChild(node) < 0) {
+            getCollapsableLengths(getEqualChild(node), length + 1, distribution);
+        } else if (getEqualChild(node) < 0 && getLessChild(node) < 0 && getGreatChild(node) < 0) {
+            if (!distribution.containsKey(length)) {
+                distribution.put(length, 1);
+            } else {
+                distribution.increment(length);
+            }
+        } else {
+            getCollapsableLengths(getLessChild(node), 1, distribution);
+            getCollapsableLengths(getEqualChild(node), 1, distribution);
+            getCollapsableLengths(getGreatChild(node), 1, distribution);
+        }
+    }
     
+    public TIntIntMap getCollapsableLengths() {
+        TIntIntMap distribution = new TIntIntHashMap();
+        getCollapsableLengths(root, 1, distribution);
+        return distribution;
+    }
     
     public String getContent() {
         StringBuilder repr = getContent(root, new StringBuilder(), "");
