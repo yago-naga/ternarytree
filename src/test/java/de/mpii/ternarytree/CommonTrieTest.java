@@ -160,36 +160,20 @@ public class CommonTrieTest {
     }
 
     @Test
-    public void testBulkLoad() {
-        Map<String, Integer> items = new HashMap<String, Integer>();
-        items.put("the red dog", 0);
-        items.put("the red", 1);
-        items.put("red king", 2);
-        items.put("the new kid", 3);
-        items.put("a", 4);
-        items.put("my name is earl", 5);
-        items.put("saving private ryan", 6);
-        items.put("saving", 7);
-        items.put("academy award", 8);
-        items.put("academy award for best actor", 9);
-        
-        TernaryTriePrimitive ttp = new TernaryTriePrimitive();
-        ttp.bulkLoadTrie(items);
-        
-        
-        assertEquals(0, ttp.get("the red dog"));
-        assertEquals(1, ttp.get("the red"));
-        assertEquals(2, ttp.get("red king"));
-        assertEquals(3, ttp.get("the new kid"));
-        assertEquals(4, ttp.get("a"));
-        assertEquals(5, ttp.get("my name is earl"));
-        assertEquals(6, ttp.get("saving private ryan"));
-        assertEquals(7, ttp.get("saving"));
-        assertEquals(8, ttp.get("academy award"));
-        assertEquals(9, ttp.get("academy award for best actor"));
+    public void testGet4() {
+        t.put("abc", 0);
 
-        assertEquals(-1, ttp.get("academy awa"));
-        assertEquals(-1, ttp.get("an"));
+        assertEquals(0, t.get("abc"));
+        assertEquals(-1, t.get("bc"));
+    }
+
+    @Test
+    public void testGet5() {
+        t.put("abc", 0);
+        t.put("bc", 1);
+
+        assertEquals(0, t.get("abc"));
+        assertEquals(1, t.get("bc"));
     }
 
     @Test

@@ -4,6 +4,8 @@ import gnu.trove.list.TCharList;
 import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TCharArrayList;
 import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.set.TIntSet;
+import gnu.trove.set.hash.TIntHashSet;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 
@@ -14,11 +16,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class TernaryTriePrimitive implements Trie, SerializableTrie {
   
@@ -69,52 +67,64 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
      * @return List of Matched SPots
      */
     public List<Match> getAllMatches(String[] tokens) {
-        List<Match> machedSpots = new ArrayList<Match>();
+        List<Match> matchedSpots = new ArrayList<Match>();
         int i = 0;
         while (i < tokens.length) {
             Match m = getLongestMatch(tokens, i);
             if (m.getTokenCount() > 0) {
-                machedSpots.add(m);
+                matchedSpots.add(m);
                 // Jump after longest match.
                 i += m.getTokenCount();
             } else {
                 i++;
             }
         }
-        return machedSpots;
+        return matchedSpots;
     }
 
     public Match getLongestMatch(String[] tokens, int start) {
+        return getLongestMatchAndInternalNodeId(tokens, start, null);
+    }
+
+    public Match getLongestMatchAndInternalNodeId(String[] tokens, int start, InternalNodeId nodeId) {
         int node = root;
         int matchValue = -1;
         int matchToken = start - 1;
         int iToken = start;
-        int pos = 0;
-        while (node != -1 && iToken < tokens.length) {
-            int relevantLength = getRelevantLength(tokens[iToken]); 
-            char chr = delimiter;
-            if (pos < relevantLength) {
-                chr = tokens[iToken].charAt(pos);
-            }
-            if (chr < getNodeKey(node)) {
-                node = getLessChild(node);
-            } else if(chr == getNodeKey(node)) {
-                if (pos == relevantLength - 1) {
-                    if (getNodeValue(node) != -1) {
-                        matchValue = getNodeValue(node);
-                        matchToken = iToken;
+        for (iToken = start; iToken < tokens.length; iToken++) {
+            int pos = 0;
+            while (node != -1 && iToken < tokens.length) {
+                int relevantLength = getRelevantLength(tokens[iToken]);
+                char chr = delimiter;
+                if (pos < relevantLength) {
+                    chr = tokens[iToken].charAt(pos);
+                }
+                if (chr < getNodeKey(node)) {
+                    node = getLessChild(node);
+                } else if (chr == getNodeKey(node)) {
+                    if (pos == relevantLength - 1) {
+                        if (getNodeValue(node) != -1) {
+                            matchValue = getNodeValue(node);
+                            matchToken = iToken;
+                        }
                     }
+                    node = getEqualChild(node);
+                    pos++;
+                    if (pos > relevantLength) {
+                        pos = 0;
+                        iToken++;
+                    }
+                } else {
+                    node = getGreatChild(node);
                 }
-                node = getEqualChild(node);
-                pos++;
-                if (pos > relevantLength) {
-                    pos = 0;
-                    iToken++;
-                }
-            } else {
-                node = getGreatChild(node);
             }
         }
+
+        // Keep track of internal node id if wanted.
+        if (nodeId != null) {
+            nodeId.setId(node);
+        }
+
         return new Match(start, matchToken - start + 1, matchValue);
     }
     
@@ -130,8 +140,43 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
     public int get(String key) {
         return get(key.split(String.valueOf(delimiter)));
     }
+
+    public int getNodeId(String partialKey) {
+        return getNodeId(partialKey.split(String.valueOf(delimiter)));
+    }
+
+    /**
+     * Get the internal id of the node that the given (partial) key points to.
+     *
+     * @param partialKey    String to look up the node for.
+     * @return              Internal id of the node, or -1 if partialKey is not present.
+     */
+    public int getNodeId(String[] partialKey) {
+        InternalNodeId nodeId = new InternalNodeId(-1);
+        getLongestMatchAndInternalNodeId(partialKey, 0, nodeId);
+        return nodeId.getId();
+    }
+
+    public void visitAggregateValues(AggregateValueVisitor visitor) {
+        visitAggregateValues(visitor, root, new HashSet<Integer>());
+    }
+
+    private void visitAggregateValues(AggregateValueVisitor visitor, int node, Set<Integer> parentValues) {
+        Set<Integer> values = new HashSet<>();
+        if (node != -1) {
+            visitAggregateValues(visitor, getLessChild(node), parentValues);
+            visitAggregateValues(visitor, getEqualChild(node), values);
+            visitAggregateValues(visitor, getGreatChild(node), parentValues);
+            int val = getNodeValue(node);
+            if (val != -1) {
+                values.add(val);
+                parentValues.addAll(values);
+            }
+            visitor.visit(node, values);
+        }
+    }
     
-    public void put (String[] tokens, int value) {
+    public void put(String[] tokens, int value) {
         root = put(root, tokens, 0, 0, value);
     }
     
@@ -164,6 +209,7 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
                     setNodeValue(node, value);
                 }
             }
+
         } else {
              setGreatChild(node, put(getGreatChild(node), tokens, iToken, pos, value));
         }
@@ -277,13 +323,35 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
     private StringBuilder getContent(int node, StringBuilder repr, String prefix) {
         if (node != -1) {
             if (nodes.get(node + 3) != -1) {
-                repr.append(prefix + labels.get(node/4) + "\t" + String.valueOf(nodes.get(node + 3)) + "\n");
+                repr.append(prefix + labels.get(node / 4) + "\t" + String.valueOf(nodes.get(node + 3)) + "\n");
             }
             repr = getContent(nodes.get(node), repr, prefix);
-            repr = getContent(nodes.get(node + 1), repr, prefix + labels.get(node/4));
+            repr = getContent(nodes.get(node + 1), repr, prefix + labels.get(node / 4));
             repr = getContent(nodes.get(node + 2), repr, prefix);
         }
         return repr;
+    }
+
+    public String getTreeView() {
+        StringBuilder repr = getTreeView(root, new StringBuilder());
+        return repr.toString();
+    }
+
+    private StringBuilder getTreeView(int node, StringBuilder sb) {
+        if (node != -1) {
+            sb.append("[" + node + "] " + labels.get(node/4));
+            if (nodes.get(node + 3) != -1) {
+                sb.append(": " + String.valueOf(nodes.get(node + 3)));
+            }
+            sb.append("\n\tl: " + nodes.get(node));
+            sb.append("\n\te: " + nodes.get(node + 1));
+            sb.append("\n\tr: " + nodes.get(node + 2));
+            sb.append("\n\n");
+            sb = getTreeView(nodes.get(node), sb);
+            sb = getTreeView(nodes.get(node + 1), sb);
+            sb = getTreeView(nodes.get(node + 2), sb);
+        }
+        return sb;
     }
 
     private int getRelevantLength(String key) {
@@ -326,6 +394,22 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
             labels.add(reader.readChar());
         }
         return this;
+    }
+
+    private class InternalNodeId {
+        private int id;
+
+        public InternalNodeId(int id) {
+            this.id = id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public int getId() {
+            return id;
+        }
     }
 }
 
