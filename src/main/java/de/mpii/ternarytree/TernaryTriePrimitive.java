@@ -150,7 +150,7 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
         String[] split = s.split(String.valueOf(delimiter));
         String[] prefixSplit = new String[split.length];
         for (int i = 0; i < split.length; i++) {
-            prefixSplit[i] = split[i].substring(0, getRelevantLength(s));
+            prefixSplit[i] = split[i].substring(0, getRelevantLength(split[i]));
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < prefixSplit.length; i++) {

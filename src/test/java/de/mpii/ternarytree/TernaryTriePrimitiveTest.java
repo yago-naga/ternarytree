@@ -96,6 +96,21 @@ public class TernaryTriePrimitiveTest {
   }
 
   @Test
+  public void testGetPrefixThresholdedString() {
+    TernaryTriePrimitive ttp = new TernaryTriePrimitive(1.0);
+    assertEquals("A B", ttp.getPrefixThresholdedString("A B"));
+    assertEquals("A", ttp.getPrefixThresholdedString("A"));
+    assertEquals("ABC", ttp.getPrefixThresholdedString("ABC"));
+
+    ttp = new TernaryTriePrimitive(0.5);
+    assertEquals("A B", ttp.getPrefixThresholdedString("A B"));
+    assertEquals("A", ttp.getPrefixThresholdedString("A"));
+    assertEquals("AB", ttp.getPrefixThresholdedString("ABC"));
+    assertEquals("AB", ttp.getPrefixThresholdedString("ABCD"));
+    assertEquals("A C", ttp.getPrefixThresholdedString("AB CD"));
+  }
+
+  @Test
   public void testGetLongestMatch() {
     TernaryTriePrimitive ttp = new TernaryTriePrimitive();
     ttp.put("Napoleon", 1);
