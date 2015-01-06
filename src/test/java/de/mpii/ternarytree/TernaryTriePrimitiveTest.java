@@ -1,23 +1,10 @@
 package de.mpii.ternarytree;
 
-import gnu.trove.map.TObjectIntMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class TernaryTriePrimitiveTest {
 
@@ -70,6 +57,42 @@ public class TernaryTriePrimitiveTest {
     assertEquals(2, t.get("bd"));
     assertEquals(3, t.get("be"));
     assertEquals(4, t.get("bcf"));
+  }
+
+  @Test
+  public void testGetNodeId() {
+    TernaryTriePrimitive t = new TernaryTriePrimitive();
+
+    t.put("abc", 0);
+    t.put("bc", 1);
+    t.put("bd", 2);
+
+    Set<Integer> nodeIds = new HashSet<>();
+
+    int nodeId = t.getPrefixId("abc");
+    assertNotEquals(-1, nodeId);
+    assertFalse(nodeIds.contains(nodeId));
+    nodeIds.add(nodeId);
+
+    nodeId = t.getPrefixId("ab");
+    assertNotEquals(-1, nodeId);
+    assertFalse(nodeIds.contains(nodeId));
+    nodeIds.add(nodeId);
+
+    nodeId = t.getPrefixId("a");
+    assertNotEquals(-1, nodeId);
+    assertFalse(nodeIds.contains(nodeId));
+    nodeIds.add(nodeId);
+
+    nodeId = t.getPrefixId("bc");
+    assertNotEquals(-1, nodeId);
+    assertFalse(nodeIds.contains(nodeId));
+    nodeIds.add(nodeId);
+
+    nodeId = t.getPrefixId("bd");
+    assertNotEquals(-1, nodeId);
+    assertFalse(nodeIds.contains(nodeId));
+    nodeIds.add(nodeId);
   }
 
   @Test

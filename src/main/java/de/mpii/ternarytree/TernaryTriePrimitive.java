@@ -4,8 +4,6 @@ import gnu.trove.list.TCharList;
 import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TCharArrayList;
 import gnu.trove.list.array.TIntArrayList;
-import gnu.trove.set.TIntSet;
-import gnu.trove.set.hash.TIntHashSet;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 
@@ -108,6 +106,11 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
                             matchToken = iToken;
                         }
                     }
+                    // Keep track of internal node id if wanted.
+                    if (nodeId != null) {
+                        nodeId.setId(node);
+                    }
+
                     node = getEqualChild(node);
                     pos++;
                     if (pos > relevantLength) {
@@ -118,11 +121,6 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
                     node = getGreatChild(node);
                 }
             }
-        }
-
-        // Keep track of internal node id if wanted.
-        if (nodeId != null) {
-            nodeId.setId(node);
         }
 
         return new Match(start, matchToken - start + 1, matchValue);
@@ -141,17 +139,40 @@ public class TernaryTriePrimitive implements Trie, SerializableTrie {
         return get(key.split(String.valueOf(delimiter)));
     }
 
-    public int getNodeId(String partialKey) {
-        return getNodeId(partialKey.split(String.valueOf(delimiter)));
+    /**
+     * Returns the string that is actually inserted to the tree,
+     * respecting prefix thresholding and delimiter.
+     *
+     * @param s String to insert
+     * @return  s in the form it is actually inserted.
+     */
+    public String getPrefixThresholdedString(String s) {
+        String[] split = s.split(String.valueOf(delimiter));
+        String[] prefixSplit = new String[split.length];
+        for (int i = 0; i < split.length; i++) {
+            prefixSplit[i] = split[i].substring(0, getRelevantLength(s));
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < prefixSplit.length; i++) {
+            sb.append(prefixSplit[i]);
+            if (i < prefixSplit.length - 1) {
+                sb.append(delimiter);
+            }
+        }
+        return sb.toString();
+    }
+
+    public int getPrefixId(String partialKey) {
+        return getPrefixId(partialKey.split(String.valueOf(delimiter)));
     }
 
     /**
-     * Get the internal id of the node that the given (partial) key points to.
+     * Get the id of the prefix that the given (partial) key points to.
      *
-     * @param partialKey    String to look up the node for.
-     * @return              Internal id of the node, or -1 if partialKey is not present.
+     * @param partialKey    String to look up the prefix id for.
+     * @return              Prefix id of the node, or -1 if partialKey is not present.
      */
-    public int getNodeId(String[] partialKey) {
+    public int getPrefixId(String[] partialKey) {
         InternalNodeId nodeId = new InternalNodeId(-1);
         getLongestMatchAndInternalNodeId(partialKey, 0, nodeId);
         return nodeId.getId();
